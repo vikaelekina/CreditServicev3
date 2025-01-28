@@ -8,6 +8,7 @@ import com.example.creditservice.model.request.RegisterRequest;
 import com.example.creditservice.model.response.DataResponseLoanOrder;
 import com.example.creditservice.model.response.DataResponseStatus;
 import com.example.creditservice.model.response.DataResponseTariff;
+import io.qameta.allure.Step;
 import io.restassured.http.ContentType;
 import methods.BaseMethods;
 import org.json.JSONObject;
@@ -22,6 +23,7 @@ import static io.restassured.RestAssured.given;
 public class BaseMethodsImpl implements BaseMethods {
 
     @Override
+    @Step("Аутентификация")
     public String authenticate(AuthenticationRequest authenticationRequest) {
         return given()
                 .when()
@@ -36,6 +38,7 @@ public class BaseMethodsImpl implements BaseMethods {
                 .getString("token");
     }
 
+    @Step ("Регистрация")
     public String register(RegisterRequest registerRequest) {
         return given()
                 .when()
@@ -51,6 +54,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Получение тарифов, ожидаемый статус код - 200")
     public DataResponseTariff getTariffs() {
         return given()
                 .when()
@@ -64,6 +68,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Отправка заявки, ожидаемый статус код - 200")
     public DataResponseLoanOrder postOrderPositive(String token, CreateOrder createOrder) {
         return given()
                 .header("Authorization", "Bearer " + token)
@@ -80,6 +85,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Некорректная отправка заявки")
     public CustomError postOrderNegative(String token, CreateOrder createOrder) {
         return given()
                 .header("Authorization", "Bearer " + token)
@@ -96,6 +102,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Некорректная отправка заявки")
     public CustomError postOrderNegative(String token, JSONObject jsonObject) {
         return given()
                 .header("Authorization", "Bearer " + token)
@@ -112,6 +119,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Отправка заявки, возвращаем статус код")
     public int statusCodePostOrder(String token, CreateOrder createOrder) {
         return given()
                 .header("Authorization", "Bearer " + token)
@@ -123,6 +131,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Получение статуса заявки")
     public DataResponseStatus getOrderStatusPositive(String token, String orderId) {
         return given()
                 .header("Authorization", "Bearer " + token)
@@ -137,6 +146,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Отправка некорректного запроса на получение статуса заявки")
     public CustomError getOrderStatusNegative(String token, String orderId) {
         return given()
                 .header("Authorization", "Bearer " + token)
@@ -151,6 +161,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Отправка запроса на получение статуса заявки, возвращаем статус код")
     public int statusCodeGetOrderStatus(String token, String orderId) {
         return given()
                 .header("Authorization", "Bearer " + token)
@@ -160,6 +171,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Удаление заявки")
     public void deleteOrderPositive(String token, DeleteOrder deleteOrder) {
         given()
                 .header("Authorization", "Bearer " + token)
@@ -172,6 +184,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Отправка некорректного запроса на удаление заявки")
     public CustomError deleteOrderNegative(String token, DeleteOrder deleteOrder) {
         return given()
                 .header("Authorization", "Bearer " + token)
@@ -188,6 +201,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Отправка запроса на удаление заявки, возвращаем статус код")
     public int statusCodeDeleteOrder(String token, DeleteOrder deleteOrder) {
         return given()
                 .header("Authorization", "Bearer " + token)
@@ -199,6 +213,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Установка статуса заявки")
     public void setStatus(JdbcTemplate jdbcTemplate, String status, String orderId) {
         jdbcTemplate.update(
                 "UPDATE loan_order SET status = ?, time_update=? WHERE order_id=?",
@@ -209,6 +224,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Установка статуса заявки")
     public void setStatus(JdbcTemplate jdbcTemplate, String status, String orderId, int time) {
         jdbcTemplate.update(
                 "UPDATE loan_order SET status = ?, time_update=? WHERE order_id=?",
@@ -219,16 +235,19 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Удаление заявки из базы данных")
     public void deleteOrderByOrderId(JdbcTemplate jdbcTemplate, String orderId) {
         jdbcTemplate.update("DELETE FROM loan_order WHERE order_id =?", orderId);
     }
 
     @Override
+    @Step("Проверка удаления заявки из базы данных")
     public int checkingDelete(JdbcTemplate jdbcTemplate, String orderId) {
         return jdbcTemplate.queryForObject("SELECT count(id) FROM loan_order WHERE order_id =?", Integer.class, orderId);
     }
 
     @Override
+    @Step
     public String addNewUser(RegisterRequest registerRequest) {
         given()
                 .when()
@@ -240,6 +259,7 @@ public class BaseMethodsImpl implements BaseMethods {
     }
 
     @Override
+    @Step("Установка роли пользователя - ROLE_ADMIN")
     public void setRole(JdbcTemplate jdbcTemplate, int userId) {
         if (!jdbcTemplate.queryForObject("SELECT role FROM users WHERE id =?", String.class, userId).equals("ROLE_ADMIN")) {
             jdbcTemplate.update("UPDATE users SET role='ROLE_ADMIN' WHERE id=?", userId);

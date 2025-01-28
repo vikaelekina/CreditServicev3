@@ -9,10 +9,7 @@ import com.example.creditservice.model.response.DataResponseStatus;
 import io.restassured.RestAssured;
 import jdk.jfr.Description;
 import methods.impl.BaseMethodsImpl;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -47,6 +44,8 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Smoke")
+    @Tag("Regress")
     @DisplayName("Проверка получения тарифов")
     @Description("Тест проверяет возможность получения тарифов")
     public void getTariffs() {
@@ -54,6 +53,8 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Smoke")
+    @Tag("Regress")
     @DisplayName("Проверка подачи заявки админом")
     @Description("Тест проверяет возможность отправки заявки на кредит пользователем с ролью ADMIN")
     public void submitApplicationAdmin() {
@@ -66,8 +67,9 @@ class CreditServiceApplicationTests {
         baseMethods.deleteOrderPositive(token, new DeleteOrder(userID,orderId));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Проверка подачи дубликата заявки админом, статус начальной заявки {index}:{0}")
     @ArgumentsSource(DublicateApplicationArgumentsProvider.class)
+    @Tag("Regress")
     @DisplayName("Проверка подачи дубликата заявки админом")
     @Description("Тест проверяет, что пользователь с ролью ADMIN не может подать дубликат заявки, если первоначальная заявка находится на рассмотрении, одобрена или с момента ее отклонения прошло недостаточно времени")
     public void submitDublicateApplicationAdmin(OrderStatus status, CustomError customError, int tariffId) {
@@ -92,6 +94,7 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Regress")
     @DisplayName("Проверка подачи дубликата отклоненной заявки спустя время админом")
     @Description("Тест проверяет, что пользователь с ролью ADMIN может успешно подать дубликат заявки, если с момента отклонения первой прошло заданное время")
     public void submitDublicateApplicationLaterAdmin() {
@@ -109,6 +112,8 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Smoke")
+    @Tag("Regress")
     @DisplayName("Проверка подачи заявки на другого пользователя админом")
     @Description("Тест проверят, что пользователь с ролью ADMIN не может подать заявку на кредит на другого пользователя ")
     public void submitApplicationOtherUserAdmin(){
@@ -116,10 +121,12 @@ class CreditServiceApplicationTests {
         int tariffID = 3;
         String token = tokenList.get(userID);
         baseMethods.setRole(jdbcTemplate,userID+1);
-        Assertions.assertEquals(baseMethods.statusCodePostOrder(token, new CreateOrder(userID,tariffID)), HttpURLConnection.HTTP_FORBIDDEN);
+        Assertions.assertEquals(HttpURLConnection.HTTP_FORBIDDEN,baseMethods.statusCodePostOrder(token, new CreateOrder(userID,tariffID)));
     }
 
     @Test
+    @Tag("Smoke")
+    @Tag("Regress")
     @DisplayName("Проверка получения статуса заявки админом")
     @Description("Тест проверяет возможность получения статуса заявки пользователем с ролью ADMIN")
     public void getStatusApplicationAdmin() {
@@ -134,6 +141,7 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Regress")
     @DisplayName("Проверка получения статуса несуществующей заявки админом")
     @Description("Тест проверяет, что при попытке получения статуса пользователем с ролью админ несуществующей заявки выдается соответствующая ошибка")
     public void getStatusInvalidApplicationAdmin(){
@@ -147,6 +155,8 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Smoke")
+    @Tag("Regress")
     @DisplayName("Проверка удаления заявки админом")
     @Description("Тест проверяет, что пользователь с ролью ADMIN может удалить, сделанную заявку, пока она находится на рассмотрении")
     public void deleteApplicationAdmin() {
@@ -159,8 +169,9 @@ class CreditServiceApplicationTests {
         Assertions.assertEquals(0, baseMethods.checkingDelete(jdbcTemplate, orderId.toString()));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Проверка удаления админом обработанный заявки со статусом: {index}:{0}")
     @EnumSource(value = OrderStatus.class, names = {"APPROVED", "REFUSED"})
+    @Tag("Regress")
     @DisplayName("Проверка удаления обработанной заявки админом")
     @Description("Пользователь с ролью ADMIN не может удалить заявку, если ее уже одобрили или отклонили")
     public void deleteAlrdeadyProcessedSubmitAdmin(OrderStatus orderStatus) {
@@ -175,6 +186,7 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Regress")
     @DisplayName("Проверка удаления заявки другого пользователя админом")
     public void deleteOtherUserApplicationAdmin(){
         int userID = 4;
@@ -188,6 +200,8 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Smoke")
+    @Tag("Regress")
     @DisplayName("Проверка подачи заявки пользователя")
     @Description("Тест проверяет возможность отправки заявки на кредит пользователем с ролью USER")
     public void submitApplicationUSER() {
@@ -198,8 +212,9 @@ class CreditServiceApplicationTests {
         Assertions.assertFalse(orderId.toString().isEmpty());
         baseMethods.deleteOrderPositive(token, new DeleteOrder(userID,orderId));
     }
-    @ParameterizedTest
+    @ParameterizedTest(name = "Проверка подачи дубликата заявки пользователем, статус начальной заявки {index}:{0}")
     @ArgumentsSource(DublicateApplicationArgumentsProvider.class)
+    @Tag("Regress")
     @DisplayName("Проверка подачи дубликата заявки пользователем")
     @Description("Тест проверяет, что пользователь с ролью USER не может подать дубликат заявки, если первоначальная заявка находится на рассмотрении, одобрена или с момента ее отклонения прошло недостаточно времени")
     public void submitDublicateApplication(OrderStatus status, CustomError customError, int tariffId) {
@@ -213,6 +228,7 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Regress")
     @DisplayName("Проверка подачи дубликата отклоненной заявки спустя время пользователем")
     @Description("Тест проверяет, что пользователь с ролью USER может успешно подать дубликат заявки, если с момента отклонения первой прошло заданное время")
     public void submitDublicateApplicationLater() {
@@ -229,6 +245,8 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Smoke")
+    @Tag("Regress")
     @DisplayName("Проверка подачи заявки на другого пользователя пользователем")
     @Description("Тест проверят, что пользователь с ролью USER не может подать заявку на кредит на другого пользователя ")
     public void submitApplicationOtherUser(){
@@ -239,6 +257,8 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Smoke")
+    @Tag("Regress")
     @DisplayName("Проверка получения статуса заявки пользователем")
     @Description("Тест проверяет возможность получения статуса заявки пользователем с ролью USER")
     public void getStatusApplicationUSER() {
@@ -252,6 +272,7 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Regress")
     @DisplayName("Проверка получения статуса несуществующей заявки пользователем")
     @Description("Тест проверяет, что при попытке получения статуса пользователем с ролью USER несуществующей заявки выдается соответствующая ошибка")
     public void getStatusInvalidApplication(){
@@ -264,6 +285,8 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Smoke")
+    @Tag("Regress")
     @DisplayName("Проверка удаления заявки пользователем")
     @Description("Тест проверяет, что пользователь с ролью USER может удалить, сделанную заявку, пока она находится на рассмотрении")
     public void deleteApplication() {
@@ -275,8 +298,9 @@ class CreditServiceApplicationTests {
         Assertions.assertEquals(0, baseMethods.checkingDelete(jdbcTemplate, orderId.toString()));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Проверка удаления пользователем обработанный заявки со статусом: {index}:{0}")
     @EnumSource(value = OrderStatus.class, names = {"APPROVED", "REFUSED"})
+    @Tag("Regress")
     @DisplayName("Проверка удаления обработанной заявки пользователем")
     @Description("Пользователь с ролью USER не может удалить заявку, если ее уже одобрили или отклонили")
     public void deleteAlrdeadyProcessedSubmit(OrderStatus orderStatus) {
@@ -290,12 +314,13 @@ class CreditServiceApplicationTests {
     }
 
     @Test
+    @Tag("Regress")
     @DisplayName("Проверка удаления заявки другого пользователя")
     public void deleteOtherUserApplication(){
         int userID = 8;
         int tariffID = 2;
         String token = tokenList.get(userID-1);
-        baseMethods.setRole(jdbcTemplate,userID);
+        baseMethods.setRole(jdbcTemplate,userID-2);
         String token2 = tokenList.get(userID-2);
         UUID orderId = baseMethods.postOrderPositive(token, new CreateOrder(userID,tariffID)).getOrderId();
         Assertions.assertEquals(HttpURLConnection.HTTP_FORBIDDEN, baseMethods.statusCodeDeleteOrder(token2, new DeleteOrder(userID, orderId)));

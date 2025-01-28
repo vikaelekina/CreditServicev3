@@ -8,6 +8,7 @@ import com.example.creditservice.model.request.RegisterRequest;
 import com.example.creditservice.model.response.DataResponseLoanOrder;
 import com.example.creditservice.model.response.DataResponseStatus;
 import com.example.creditservice.model.response.DataResponseTariff;
+import io.qameta.allure.Step;
 import org.json.JSONObject;
 import org.springframework.jdbc.core.JdbcTemplate;
 
